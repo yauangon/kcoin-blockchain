@@ -75,10 +75,13 @@ module.exports = exports = ({ blocks, transactions, miner, utils, events }) => {
   app.post('/transactions', wrap(async function (req, res) {
     // Validate and add transaction into database
     try {
+      console.log("///////////////////////")
+      console.log(req.body)
       let transaction = await transactions.add(req.body);
-      // console.log(req.body);
+      console.log(req.body);
       res.send(200, transaction.cache);
     } catch (err) {
+      console.log(req.body)
       throw new errors.InvalidContentError(err.message);
     }
   }));

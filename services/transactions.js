@@ -115,7 +115,7 @@ module.exports = exports = ({ db, utils, events }) => {
 
   // 1. Check syntactic correctness
   let checkVersion = async function (transaction) {
-    if (transaction.version !== 1) {
+    if (transaction.version !== '1') {
       throw Error('Only support version 1');
     }
   };
