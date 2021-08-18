@@ -1,0 +1,4 @@
+Generated block 
+    0007fd8dfd59db0455f0db86ca9a44d941c951ea45d8234094fabd6461f0b796 
+with nonce: 6782  - hash: 
+    0007fd8dfd59db0455f0db86ca9a44d941c951ea45d8234094fabd6461f0b796

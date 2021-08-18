@@ -76,6 +76,7 @@ module.exports = exports = ({ blocks, transactions, miner, utils, events }) => {
     // Validate and add transaction into database
     try {
       let transaction = await transactions.add(req.body);
+      // console.log(req.body);
       res.send(200, transaction.cache);
     } catch (err) {
       throw new errors.InvalidContentError(err.message);

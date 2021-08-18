@@ -12,9 +12,11 @@ services:
       CORS_ALLOW_ORIGINS: http://localhost:3000,http://localhost:8080
       PORT: 5000
       DATABASE_URL: postgres://kcoin:@db:5432/kcoin
+      # POSTGRES_HOST_AUTH_METHOD : trust
   db:
     ports:
       - 5432:5432
     environment:
       POSTGRES_USER: kcoin
+      POSTGRES_HOST_AUTH_METHOD : trust
     image: postgres:9.6-alpine
