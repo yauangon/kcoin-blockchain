@@ -7,6 +7,7 @@ module.exports = exports = ({ blocks, transactions, utils }) => {
 
   let generateBlock = async function (previousBlockHash, message, outputs, transactionList) {
     console.log('Started to generate new block...');
+
     let block = {};
     block.version = 1;
     block.previousBlockHash = previousBlockHash;
@@ -48,7 +49,7 @@ module.exports = exports = ({ blocks, transactions, utils }) => {
   // Auto run miner
   let run = async function () {
     // Wait for 1 minutes
-    await Promise.delay(BLOCK_DELAY * 1000);
+    await Promise.delay(BLOCK_DELAY);
     // Try to get all unconfirm transactions
     let unconfirmedTransactions = await transactions.findUnconfirmed();
     // Sort by fee from high to low

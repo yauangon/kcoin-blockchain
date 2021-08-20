@@ -4,6 +4,7 @@ const wrap = require('express-async-wrap');
 const _ = require('lodash');
 const WebSocket = require('ws');
 const corsM = require('restify-cors-middleware');
+const DEBUG_MODE = 1
 
 module.exports = exports = ({ blocks, transactions, miner, utils, events }) => {
   const GENESIS_MESSAGE = process.env.GENESIS_MESSAGE || 'KCOIN BLOCKCHAIN BY KHA DO @ QUOINE JP DEC 2017';
@@ -71,17 +72,27 @@ module.exports = exports = ({ blocks, transactions, miner, utils, events }) => {
     }
   }));
 
+  
   // Add new transaction. TODO: Add WS
+  // Params
+  //    version: 1
+  //    inputs:
+  //    outputs:
+  //  
+  //
+  //
+  //
   app.post('/transactions', wrap(async function (req, res) {
     // Validate and add transaction into database
     try {
       console.log("///////////////////////")
-      console.log(req.body)
       let transaction = await transactions.add(req.body);
-      console.log(req.body);
+      // console.log(req.body);
+      // console.trace()
       res.send(200, transaction.cache);
     } catch (err) {
-      console.log(req.body)
+      // console.log(req.body)
+      console.trace()
       throw new errors.InvalidContentError(err.message);
     }
   }));

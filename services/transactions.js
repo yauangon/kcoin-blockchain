@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const bigInt = require('big-integer');
 const _ = require('lodash');
+const DEBUG_MODE = 1
 
 module.exports = exports = ({ db, utils, events }) => {
   const TABLE_NAME = 'transactions';
@@ -41,6 +42,11 @@ module.exports = exports = ({ db, utils, events }) => {
     if (!transaction) {
       throw Error('Transaction not found');
     }
+    //NOTE
+    //_.pick example
+    // var object = { 'a': 1, 'b': '2', 'c': 3 };
+    // _.pick(object, ['a', 'c']);
+    // // => { 'a': 1, 'c': 3 }
     let cache = _.pick(transaction, 'hash', 'version');
     cache.inputs = (await db(INPUT_TABLE_NAME).where('transactionHash', hash).orderBy('index')).map(input => {
       return _.pick(input, 'referencedOutputHash', 'referencedOutputIndex', 'unlockScript');
@@ -64,8 +70,11 @@ module.exports = exports = ({ db, utils, events }) => {
   let toBinary = function (transaction, withoutUnlockScript) {
     let version = Buffer.alloc(4);
     version.writeUInt32BE(transaction.version);
+
     let inputCount = Buffer.alloc(4);
     inputCount.writeUInt32BE(transaction.inputs.length);
+
+    // console.log(transaction.input)
     let inputs = Buffer.concat(transaction.inputs.map(input => {
       // Output transaction hash
       let outputHash = Buffer.from(input.referencedOutputHash, 'hex');
@@ -128,6 +137,7 @@ module.exports = exports = ({ db, utils, events }) => {
     if (!transaction.outputs || transaction.outputs.length === 0) {
       throw Error('Outputs cannot be empty');
     }
+    if(DEBUG_MODE == 1) console.log("checkInputOutputNotEmpty: Passed");
   };
   
   // 3. Size in bytes <= MAX_BLOCK_SIZE
@@ -137,6 +147,7 @@ module.exports = exports = ({ db, utils, events }) => {
     if (transaction.binary.length > MAX_SIZE) {
       throw Error('Transaction size > ' + (MAX_SIZE / 1024) + 'kB');
     }
+    if(DEBUG_MODE == 1) console.log("CheckSizeInBytes: Passed");
   };
 
   // 4. Each output value, as well as the total, must be in legal money range
@@ -161,6 +172,8 @@ module.exports = exports = ({ db, utils, events }) => {
     if (transaction.totalOutput >= MAX_UINT32) {
       throw Error('Total output value must not larger than max uint32');
     }
+    if(DEBUG_MODE == 1) console.log("checkOutputValue: Passed");
+
   };
 
   // 5. Make sure none of the inputs have hash=0, n=-1 (coinbase transaction)
@@ -175,6 +188,7 @@ module.exports = exports = ({ db, utils, events }) => {
         throw Error('Reference transaction output index can not be -1 except coinbase transaction');
       }
     });
+    if(DEBUG_MODE == 1) console.log("checkNotCoinbase: Passed");
   };
 
   let checkLockScript = async function (transaction) {
@@ -185,6 +199,8 @@ module.exports = exports = ({ db, utils, events }) => {
         throw Error('Lock script must have format ADD [ADDRESS]');
       }
     });
+    if(DEBUG_MODE == 1) console.log("checkLockScript: Passed");
+
   }; 
 
   // 6. Check that nLockTime <= INT_MAX[1], size in bytes >= 100[2], and sig opcount <= 2[3]
@@ -211,7 +227,8 @@ module.exports = exports = ({ db, utils, events }) => {
     }
   };
 
-  // 9. For each input, if the referenced output exists in any other tx in the pool, reject this transaction.
+  // 9. For each input, if the referenced output exists in any other tx in the pool, 
+  //reject this transaction.
   let checkRefecenedOutputInOtherTransactionInPool = async function (transaction) {
     await Promise.each(transaction.inputs, async input => {
       let found = await db(INPUT_TABLE_NAME)
@@ -229,7 +246,9 @@ module.exports = exports = ({ db, utils, events }) => {
     });
   };
 
-  // 10. For each input, look in the main branch and the transaction pool to find the referenced output transaction. If the output transaction is missing for any input, this will be an orphan transaction. Add to the orphan transactions, if a matching transaction is not in there already.
+  // 10. For each input, look in the main branch and the transaction pool to find the referenced output transaction.
+  //  If the output transaction is missing for any input, this will be an orphan transaction.
+  // Add to the orphan transactions, if a matching transaction is not in there already.
   // => Not implement
 
   // 11. For each input, if the referenced output transaction is coinbase (i.e. only 1 input, with hash=0, n=-1), it must have at least COINBASE_MATURITY (100) confirmations; else reject this transaction
